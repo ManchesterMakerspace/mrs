@@ -1,0 +1,5 @@
+node_modules
+*.sh
+local_test
+npm-debug.log
+jitploy/decrypted_*

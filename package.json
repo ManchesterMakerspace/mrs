@@ -1,0 +1,24 @@
+{
+  "name": "Member Rentention Service",
+  "version": "1.0.0",
+  "description": "A function api that is used to store member information to remember member needs",
+  "main": "mrs.js",
+  "scripts": {
+    "postversion": "git push"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ManchesterMakerspace/mrs.git"
+  },
+  "author": "Manchester Makerspace",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ManchesterMakerspace/mrs/issues"
+  },
+  "homepage": "https://github.com/ManchesterMakerspace/mrs#readme",
+  "private": true,
+  "dependencies": {
+    "@slack/client": "^4.2.0",
+    "mongodb": "^2.2.35"
+  }
+}

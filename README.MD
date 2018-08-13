@@ -18,7 +18,7 @@ or take quick notes about checkout interest
 
     /mrs "Will Lynch" "cncmill"
 
-Ideally once Paul gets checked out on the oxy torch the interest is removed from his mrs document in the interest collection. This may take some syncing with a currently non existing checkout collection.
+Ideally once Paul gets checked out on the oxy torch the interest is removed from his mrs document in the interest collection. This may take some syncing with a checkout collection.
 
 Another helpful feature given some adoption would be to add the ability to store member general or specific availability. E.G. Tuesdays Nights or Tuesday the 18th. This way resource managers can parse checkout needs and availability in one go. Collecting this information is still pretty manual, but the first general goal is just to remember the information in a centralized place.
 

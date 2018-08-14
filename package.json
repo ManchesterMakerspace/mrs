@@ -1,6 +1,6 @@
 {
   "name": "Member Rentention Service",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A function api that is used to store member information to remember member needs",
   "main": "mrs.js",
   "scripts": {

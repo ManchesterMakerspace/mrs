@@ -2,7 +2,7 @@
 // 'use strict';
 
 module.exports.remember = function(event, context, callback) {
-    console.log(JSON.parse(event.body)); // Contains incoming request data (e.g., query params, headers and more)
+    console.log(event); // Contains incoming request data (e.g., query params, headers and more)
     var response = {
       statusCode: 200,
       headers: {

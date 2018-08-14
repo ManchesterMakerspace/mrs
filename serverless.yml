@@ -6,7 +6,7 @@ provider:
     runtime: nodejs8.10
 
 functions:
-    membership:
+    remember:
         handler: mrs.remember
         events:
             - http:

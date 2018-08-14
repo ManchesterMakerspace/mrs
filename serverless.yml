@@ -2,11 +2,13 @@
 service: MRS
 
 provider:
-  name: aws
-  runtime: nodejs6.10
+    name: aws
+    runtime: nodejs6.10
 
 functions:
-  membership:
-    handler: mrs.record
-    events:
-      - schedule: cron(0 11 ? * 7 *)
+    membership:
+        handler: mrs.remember
+        events:
+            - http:
+                path: remember
+                method: POST

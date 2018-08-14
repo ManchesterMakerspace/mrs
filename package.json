@@ -1,6 +1,6 @@
 {
   "name": "Member Rentention Service",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A function api that is used to store member information to remember member needs",
   "main": "mrs.js",
   "scripts": {
@@ -17,6 +17,5 @@
   },
   "homepage": "https://github.com/ManchesterMakerspace/mrs#readme",
   "private": true,
-  "dependencies": {
-  }
+  "dependencies": {}
 }

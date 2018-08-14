@@ -18,7 +18,5 @@
   "homepage": "https://github.com/ManchesterMakerspace/mrs#readme",
   "private": true,
   "dependencies": {
-    "@slack/client": "^4.2.0",
-    "mongodb": "^2.2.35"
   }
 }

@@ -1,7 +1,7 @@
 {
-  "name": "Member Rentention Service",
+  "name": "mrs",
   "version": "1.0.5",
-  "description": "A function api that is used to store member information to remember member needs",
+  "description": "Member Retention Service: A function api that is used to store member information to remember member needs",
   "main": "mrs.js",
   "scripts": {
     "postversion": "git push"
@@ -17,5 +17,7 @@
   },
   "homepage": "https://github.com/ManchesterMakerspace/mrs#readme",
   "private": true,
-  "dependencies": {}
+  "dependencies": {
+    "mongodb": "^3.1.3"
+  }
 }

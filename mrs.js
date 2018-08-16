@@ -6,20 +6,17 @@ var fs = require('fs');                // i dunno, I like files, and chickens
 // var bParser = require('body-parser');  // read incoming request bodies AKA &+% diliminated weirdness in api request, maybe this is just for middleware?
 
 module.exports.remember = function(event, context, callback) {
-    // console.log(event.body);  // would rather have this crash after making a response
     var response = {
-        statusCode: 200,
-        headers: {
-            'Content-type': 'application/json'
-        },
-        body: {
+      statusCode: 200,
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify({
             'text': 'hello world',
-            'attachments': {
-                'text': 'yo this in an attachment'
-            }
-        }
+            'attachments': [{ 'text': event.body }]
+      })
     };
-    callback(null, response); // do the thing
+     callback(null, response);
 };
 
 /*

@@ -6,17 +6,18 @@ var fs = require('fs');                              // i dunno, I like files, a
 var querystring = require('querystring');
 
 module.exports.remember = function(event, context, callback) {
+    var body = querystring.parse(event.body);
     var response = {
-      statusCode: 200,
-      headers: {
-        'Content-type': 'application/json'
-      },
-      body: JSON.stringify({
-            'text': 'hello world',
-            'attachments': [{ 'text': querystring.parse(event.body) }]
-      })
+        statusCode: 200,
+        headers: {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            'text': 'hello ' + body.user_name + '!',
+            // 'attachments': [{ 'text': 'yo' }] // This an example of how attachments are formated
+        })
     };
-     callback(null, response);
+    callback(null, response);
 };
 
 /*

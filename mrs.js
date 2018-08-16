@@ -14,7 +14,7 @@ module.exports.remember = function(event, context, callback) {
                 'Content-type': 'application/json'   // content type for richer responses beyound just text
             },
             body: JSON.stringify({
-                'text': 'hello ' + body.user_name + '!',
+                'text': 'hello ' + body.user_name + '!'
                 // 'attachments': [{ 'text': 'yo' }] // This an example of how attachments are formated
             })
         };
@@ -26,9 +26,10 @@ module.exports.remember = function(event, context, callback) {
 var varify = {
     slack_sign_secret: process.env.SLACK_SIGNING_SECRET,
     request: function(event){
-        var timestamp = event.headers['X-Slack-Request_Timestamp'];            // nonce from slack to have an idea
-        if(Math.abs(new Date().getTime() - timestamp > 60 * 5)){return false;} // make sure request isn't a duplicate
-        var computedSig = crypto.createHmac('sha256', verify.slack_sign_secret).update('v0:' + timestamp + ':' + event.body).digest('hex');
+        var timestamp = event.headers['X-Slack-Request-Timestamp'];        // nonce from slack to have an idea
+        var secondsFromEpoch = Math.round(new Date().getTime() / 1000);    // get current seconds from epoch because thats what we are comparing with
+        if(Math.abs(secondsFromEpoch - timestamp > 60 * 5)){return false;} // make sure request isn't a duplicate
+        var computedSig = 'v0=' + crypto.createHmac('sha256', varify.slack_sign_secret).update('v0:' + timestamp + ':' + event.body).digest('hex');
         return crypto.timingSafeEqual(Buffer.from(event.headers['X-Slack-Signature'], 'utf8'), Buffer.from(computedSig ,'utf8'));
     }
 };

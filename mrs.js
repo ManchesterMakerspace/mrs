@@ -3,7 +3,7 @@
 
 var crypto = require('crypto');        // verify request from slack is from slack with hmac-256
 var fs = require('fs');                // i dunno, I like files, and chickens
-var bParser = require('body-parser');  // read incoming request bodies AKA &+% diliminated weirdness in api request, maybe this is just for middleware?
+// var bParser = require('body-parser');  // read incoming request bodies AKA &+% diliminated weirdness in api request, maybe this is just for middleware?
 
 module.exports.remember = function(event, context, callback) {
     var response = {
@@ -25,7 +25,7 @@ module.exports.remember = function(event, context, callback) {
 
 var varify = {
     slack_sign_secret: process.env.SLACK_SIGNING_SECRET,
-    request: function(event){
+    request: function(expectedBody){
 
     }
 };

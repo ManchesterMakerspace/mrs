@@ -8,18 +8,19 @@ module.exports.remember = function(event, context, callback) {
     var body = querystring.parse(event.body);        // Parse urlencoded body
     var response = {statusCode: 403};                // until request is authentically varified as from slack
     if(varify.request(event)){                       // make sure this request comes from slack
-        response = {
-            statusCode: 200,
-            headers: {
-                'Content-type': 'application/json'   // content type for richer responses beyound just text
-            },
-            body: JSON.stringify({
-                'text': 'hello ' + body.user_name + '!'
-                // 'attachments': [{ 'text': 'yo' }] // This an example of how attachments are formated
-            })
-        };
+        mongo.storeData(body, function whenStored(error, data){
+            response = {
+                statusCode: 200,
+                headers: {'Content-type': 'application/json'},   // content type for richer responses beyound just text
+            };
+            if(error){
+                response.body = JSON.stringify({'text' : error});
+            } else {
+                response.body = JSON.stringify({'text' : data});
+            }
+            callback(null, response);
+        });
     }
-    callback(null, response);
 };
 
 var mongo = {
@@ -33,9 +34,7 @@ var mongo = {
         });
     },
     storeData: function(body, onStore){
-        mongo.connectAndDo(function onError(error){
-            console.log('error: ' + error);
-        }, function onConnect(db){
+        mongo.connectAndDo(onStore, function onConnect(db){ // if there is an error skip right to onStore function to hand error and respond
             var textArray = body.text.split('\"');
             var member = textArray[0] ? textArray[0] : 0;
             var note = body.text;
@@ -51,7 +50,7 @@ var mongo = {
                 note: note,
                 channel: body.channel_name,
                 channelId: body.channel_id
-            });
+            }, onStore);
         });
     }
 };

@@ -22,6 +22,39 @@ module.exports.remember = function(event, context, callback) {
     callback(null, response);
 };
 
+var mongo = {
+    URI: process.env.MONGO_URI,
+    ObjectId: require('mongodb').ObjectID,
+    client: require('mongodb').MongoClient,
+    connectAndDo: function(connected, failed){         // url to db and what well call this db in case we want multiple
+        mongo.client.connect(mongo.URI, function onConnect(error, db){
+            if(db){connected(db);} // passes database object so databasy things can happen
+            else  {failed(error);} // what to do when your reason for existence is a lie
+        });
+    },
+    storeData: function(body, onStore){
+        mongo.connectAndDo(function onError(error){
+            console.log('error: ' + error);
+        }, function onConnect(db){
+            var textArray = body.text.split('\"');
+            var member = textArray[0] ? textArray[0] : 0;
+            var note = body.text;
+            if(member){ // given there was a qouted member name
+                note = textArray[1] ? textArray[1] : 'no notes';
+            }
+            db.collection('notes').insertOne({
+                _id: new mongo.ObjectID(),
+                timestamp: new Date().getTime(),
+                nodeTakerId: body.user_id,
+                noteTaker: body.user_name,
+                forMember: member,
+                note: note,
+                channel: body.channel_name,
+                channelId: body.channel_id
+            });
+        });
+    }
+};
 
 var varify = {
     slack_sign_secret: process.env.SLACK_SIGNING_SECRET,

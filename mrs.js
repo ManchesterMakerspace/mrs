@@ -16,8 +16,8 @@ module.exports.remember = function(event, context, callback) {
             if(error){
                 response.body = JSON.stringify({'text' : error.name + ': ' + error.code});
             } else {
-                if(data.text){
-                    response.body = JSON.stringify({'text' : data.text});
+                if(data){
+                    response.body = JSON.stringify({'text' : 'recorded information for ' + body.text + '\n' + data});
                 } else {
                     response.body = JSON.stringify({'text' : body.user_name + ' just recorded a note- ' + body.text});
                 }
@@ -42,6 +42,7 @@ var mongo = {
             var textArray = body.text.split(':');      // split arguments with colons
             var contact = body.text;  //.toLowerCase();
             var note = null;          // default to full text given no split
+            console.log('length of arguments ' + textArray.length);
             if(textArray.length > 1){ // given we got two arguments split them into member and note fields
                 contact = textArray[0];
                 note = textArray[1];
@@ -55,15 +56,15 @@ var mongo = {
                     channel: body.channel_name,
                     channelId: body.channel_id
                 }, function whenDone(error, data){
-                    onHandled(error, data);
+                    onHandled(error, null);
                     client.close();
                 });
             } else { // given just one argument is passed a search is assumed
-                var cursor = client.db(mongo.dbName).collections('notes').find({forContact: contact});
+                var cursor = client.db(mongo.dbName).collection('notes').find({forContact: contact});
                 var collatedResult = '';
                 mongo.stream(cursor, client, collatedResult, onHandled);
             }
-        }, onStore); // in fail to connect case pass onStore function to handle error
+        }, onHandled); // in fail to connect case pass onStore function to handle error
     },
     stream: function(cursor, client, collatedResult, onHandled){
         cursor.next(function onNote(error, doc){ // syncronously/recursively move through cursor results because we have nothing else todo
@@ -71,7 +72,7 @@ var mongo = {
                 collatedResult += doc.note + '\n'; // collate relault to be returned
                 mongo.stream(cursor, client, collatedResult, onHandled);
             } else {
-                onHandled(error, {text: collatedResult});
+                onHandled(error, collatedResult);
                 client.close();
             }
         });

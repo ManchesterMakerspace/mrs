@@ -14,9 +14,9 @@ module.exports.remember = function(event, context, callback) {
                 headers: {'Content-type': 'application/json'},   // content type for richer responses beyound just text
             };
             if(error){
-                response.body = JSON.stringify({'text' : error});
+                response.body = JSON.stringify({'text' : error.name + ': ' + error.code});
             } else {
-                response.body = JSON.stringify({'text' : data});
+                response.body = JSON.stringify({'text' : body.user_name + ' just recorded a note- ' + body.text});
             }
             callback(null, response);
         });
@@ -24,22 +24,23 @@ module.exports.remember = function(event, context, callback) {
 };
 
 var mongo = {
-    URI: process.env.MONGO_URI,
-    ObjectId: require('mongodb').ObjectID,
+    ObjectID: require('mongodb').ObjectID,
     client: require('mongodb').MongoClient,
     connectAndDo: function(connected, failed){         // url to db and what well call this db in case we want multiple
-        mongo.client.connect(mongo.URI, function onConnect(error, client){
-            if(error){failed(error);}     // what to do when your reason for existence is a lie
-            else     {connected(client);} // passes client connection object so databasy things can happen
-        }, { useNewUrlParser: true });    // Because apperently everyone involved in mongodb devlopment wants to communicate to other devs through errors
+        mongo.client.connect(process.env.MONGO_URI, { useNewUrlParser: true }, function onConnect(error, client){
+            if(error)      {failed(error);}     // what to do when your reason for existence is a lie
+            else if(client){connected(client);} // passes client connection object so databasy things can happen
+        });
     },
     storeData: function(body, onStore){
-        mongo.connectAndDo(onStore, function onConnect(client){ // if there is an error skip right to onStore function to hand error and respond
-            var textArray = body.text.split('\"');
-            var member = textArray[0] ? textArray[0] : 0;
-            var note = body.text;
-            if(member){ // given there was a qouted member name
-                note = textArray[1] ? textArray[1] : 'no notes';
+        console.log('store data called');
+        mongo.connectAndDo(function onConnect(client){ // if there is an error skip right to onStore function to hand error and respond
+            var textArray = body.text.split(':');      // split arguments with colons
+            var member = 'not sure';
+            var note = body.text;     // default to full text given no split
+            if(textArray.length > 1){ // given we got two arguments split them into member and note fields
+                member = textArray[0];
+                note = textArray[1];
             }
             client.db('makerspace_testing').collection('notes').insertOne({
                 _id: new mongo.ObjectID(),
@@ -51,10 +52,10 @@ var mongo = {
                 channel: body.channel_name,
                 channelId: body.channel_id
             }, function whenDone(error, data){
-                onStore();
+                onStore(error, data);
                 client.close();
             });
-        });
+        }, onStore); // in fail to connect case pass onStore function to handle error
     }
 };
 

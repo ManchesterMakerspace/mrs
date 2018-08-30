@@ -16,7 +16,7 @@ module.exports.remember = function(event, context, callback) {
             if(error){
                 response.body = JSON.stringify({'text' : error.name + ': ' + error.code});
             } else {
-                if(data){
+                if(data && body.channel_id === process.env.PRIVATE_VIEW_CHANNEL){ // Need to be in a specific channel in order to recieve results
                     response.body = JSON.stringify({'text' : 'recorded information for ' + body.text + '\n' + data});
                 } else {
                     response.body = JSON.stringify({'text' : body.user_name + ' just recorded a note- ' + body.text});
@@ -53,7 +53,6 @@ var mongo = {
                     noteTaker: body.user_name,
                     forContact: contact, // this could be a current member, potential member, teacher, or community partner
                     note: note,
-                    channel: body.channel_name,
                     channelId: body.channel_id
                 }, function whenDone(error, data){
                     onHandled(error, null);

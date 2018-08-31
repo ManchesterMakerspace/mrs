@@ -28,7 +28,7 @@ module.exports.remember = function(event, context, callback) {
 };
 
 var mongo = {
-    dbName: 'makerspace_testing',
+    dbName: 'makerauth',
     ObjectID: require('mongodb').ObjectID,
     client: require('mongodb').MongoClient,
     connectAndDo: function(connected, failed){         // url to db and what well call this db in case we want multiple
@@ -36,7 +36,7 @@ var mongo = {
             if(error)      {failed(error);}     // what to do when your reason for existence is a lie
             else if(client){
                 client.db(mongo.dbName).collection('notes').createIndex({forContact: 1},{collation: {locale: 'en', strength: 2}});
-                client.db(mongo.dbName).collection('cards').createIndex({forContact: 1},{collation: {locale: 'en', strength: 2}});
+                client.db(mongo.dbName).collection('members').createIndex({firstname: 1, lastname: 1},{collation: {locale: 'en', strength: 2}});
                 connected(client);
             } // passes client connection object so databasy things can happen
         });
@@ -44,20 +44,23 @@ var mongo = {
     handleRequest: function(body, onHandled){
         mongo.connectAndDo(function onConnect(client){ // if there is an error skip right to onStore function to hand error and respond
             var textArray = body.text.split(':');      // split arguments with colons
-            var contact = body.text;  //.toLowerCase();
-            var note = null;          // default to full text given no split
-            console.log('length of arguments ' + textArray.length);
-            if(textArray.length > 1){ // given we got two arguments split them into member and note fields
+            var contact = body.text;                   // default to full text as contact name to search on given no split
+            var note = null;                           // default to null as a place holder, not need in a searc
+            if(textArray.length > 1){                  // given we got two arguments split them into member and note fields
                 contact = textArray[0];
+                nameObj = helper.getName(contact);
                 note = textArray[1];
-                var cardCursor = client.db(mongo.dbName).collection('cards').find({holder: contact}).collation({locale: 'en', strength:2});
-                cardCursor.next(function onExistingMember(err, doc){ // just take the first result, don't really care if its unique
+                var memberSearchCursor = client.db(mongo.dbName).collection('members').find({ $and:[
+                    {firstname: nameObj.first},
+                    {lastname: nameObj.last}
+                ]}).collation({locale: 'en', strength:2});
+                memberSearchCursor.next(function onExistingMember(err, doc){ // just take the first result, don't really care if its unique
                     client.db(mongo.dbName).collection('notes').insertOne({
                         _id: new mongo.ObjectID(),
                         timestamp: new Date().getTime(),
                         nodeTakerId: body.user_id,
                         noteTaker: body.user_name,
-                        forContact: contact, // this could be a current member, potential member, teacher, or community partner
+                        forContact: nameObj.first + ' ' + nameObj.last, // this could be a current member, potential member, teacher, or community partner
                         note: note,
                         channelId: body.channel_id,
                         member_id: doc ? doc.member_id : null // grab member id if this matches up with a current name
@@ -83,6 +86,18 @@ var mongo = {
                 client.close();
             }
         });
+    }
+};
+
+var helper = {
+    getName: function(contact){
+        var contactArray = contact.split(' ');    // diliminate peices of name array on spaces
+        var name = {first: '', last: ''};         // establish an object to return with expected name data
+        for(var i = 0; i < contactArray.length; i++){ // iterate over all peices of name
+            if(i){ name.last += contactArray[i];} // just compile segemented peices as a complete last name
+            else { name.first = contactArray[0];} // Just one first name please
+        }
+        return name;
     }
 };
 

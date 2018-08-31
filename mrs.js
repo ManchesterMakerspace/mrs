@@ -36,6 +36,7 @@ var mongo = {
             if(error)      {failed(error);}     // what to do when your reason for existence is a lie
             else if(client){
                 client.db(mongo.dbName).collection('notes').createIndex({forContact: 1},{collation: {locale: 'en', strength: 2}});
+                client.db(mongo.dbName).collection('cards').createIndex({forContact: 1},{collation: {locale: 'en', strength: 2}});
                 connected(client);
             } // passes client connection object so databasy things can happen
         });
@@ -49,17 +50,21 @@ var mongo = {
             if(textArray.length > 1){ // given we got two arguments split them into member and note fields
                 contact = textArray[0];
                 note = textArray[1];
-                client.db(mongo.dbName).collection('notes').insertOne({
-                    _id: new mongo.ObjectID(),
-                    timestamp: new Date().getTime(),
-                    nodeTakerId: body.user_id,
-                    noteTaker: body.user_name,
-                    forContact: contact, // this could be a current member, potential member, teacher, or community partner
-                    note: note,
-                    channelId: body.channel_id
-                }, function whenDone(error, data){
-                    onHandled(error, null);
-                    client.close();
+                var cardCursor = client.db(mongo.dbName).collection('cards').find({holder: contact}).collation({locale: 'en', strength:2});
+                cardCursor.next(function onExistingMember(err, doc){ // just take the first result, don't really care if its unique
+                    client.db(mongo.dbName).collection('notes').insertOne({
+                        _id: new mongo.ObjectID(),
+                        timestamp: new Date().getTime(),
+                        nodeTakerId: body.user_id,
+                        noteTaker: body.user_name,
+                        forContact: contact, // this could be a current member, potential member, teacher, or community partner
+                        note: note,
+                        channelId: body.channel_id,
+                        member_id: doc ? doc.member_id : null // grab member id if this matches up with a current name
+                    }, function whenDone(error, data){
+                        onHandled(error, null);
+                        client.close();
+                    });
                 });
             } else { // given just one argument is passed a search is assumed
                 var cursor = client.db(mongo.dbName).collection('notes').find({forContact: contact}).collation({locale: 'en', strength:2});

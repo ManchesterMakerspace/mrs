@@ -48,7 +48,7 @@ var mongo = {
             var note = null;                           // default to null as a place holder, not need in a searc
             if(textArray.length > 1){                  // given we got two arguments split them into member and note fields
                 contact = textArray[0];
-                nameObj = helper.getName(contact);
+                var nameObj = helper.getName(contact);
                 note = textArray[1];
                 var memberSearchCursor = client.db(mongo.dbName).collection('members').find({ $and:[
                     {firstname: nameObj.first},
@@ -63,7 +63,7 @@ var mongo = {
                         forContact: nameObj.first + ' ' + nameObj.last, // this could be a current member, potential member, teacher, or community partner
                         note: note,
                         channelId: body.channel_id,
-                        member_id: doc ? doc.member_id : null // grab member id if this matches up with a current name
+                        member_id: doc ? doc._id : null // grab member id if this matches up with a current name
                     }, function whenDone(error, data){
                         onHandled(error, null);
                         client.close();

@@ -34,7 +34,10 @@ var mongo = {
     connectAndDo: function(connected, failed){         // url to db and what well call this db in case we want multiple
         mongo.client.connect(process.env.MONGO_URI, { useNewUrlParser: true }, function onConnect(error, client){
             if(error)      {failed(error);}     // what to do when your reason for existence is a lie
-            else if(client){connected(client);} // passes client connection object so databasy things can happen
+            else if(client){
+                client.db(mongo.dbName).collection('notes').createIndex({forContact: 1},{collation: {locale: 'en', strength: 2}});
+                connected(client);
+            } // passes client connection object so databasy things can happen
         });
     },
     handleRequest: function(body, onHandled){
@@ -59,7 +62,7 @@ var mongo = {
                     client.close();
                 });
             } else { // given just one argument is passed a search is assumed
-                var cursor = client.db(mongo.dbName).collection('notes').find({forContact: contact});
+                var cursor = client.db(mongo.dbName).collection('notes').find({forContact: contact}).collation({locale: 'en', strength:2});
                 var collatedResult = '';
                 mongo.stream(cursor, client, collatedResult, onHandled);
             }

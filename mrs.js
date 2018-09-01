@@ -16,7 +16,7 @@ module.exports.remember = function(event, context, callback) {
             if(error){
                 response.body = JSON.stringify({'text' : error.name + ': ' + error.code});
             } else {
-                if(data && body.channel_id === process.env.PRIVATE_VIEW_CHANNEL){ // Need to be in a specific channel in order to recieve results
+                if(data){                             // Need to be in a specific channel in order to recieve results
                     response.body = JSON.stringify({'text' : 'recorded information for ' + body.text + '\n' + data});
                 } else {
                     response.body = JSON.stringify({'text' : body.user_name + ' just recorded a note- ' + body.text});
@@ -72,14 +72,16 @@ var mongo = {
             } else { // given just one argument is passed a search is assumed
                 var cursor = client.db(mongo.dbName).collection('notes').find({forContact: contact}).collation({locale: 'en', strength:2});
                 var collatedResult = '';
-                mongo.stream(cursor, client, collatedResult, onHandled);
+                mongo.stream(body.channel_id, cursor, client, collatedResult, onHandled);
             }
         }, onHandled); // in fail to connect case pass onStore function to handle error
     },
-    stream: function(cursor, client, collatedResult, onHandled){
-        cursor.next(function onNote(error, doc){ // syncronously/recursively move through cursor results because we have nothing else todo
-            if(doc){
-                collatedResult += doc.note + '\n'; // collate relault to be returned
+    stream: function(channel, cursor, client, collatedResult, onHandled){
+        cursor.next(function onNote(error, doc){       // syncronously/recursively move through cursor results because we have nothing else todo
+            if(doc){                                   // Show all notes in MR channel, share channel specific in channel of origin
+                if(channel === process.env.PRIVATE_VIEW_CHANNEL || channel === doc.channelId){
+                    collatedResult += doc.note + '\n'; // collate relault to be returned
+                }
                 mongo.stream(cursor, client, collatedResult, onHandled);
             } else {
                 onHandled(error, collatedResult);

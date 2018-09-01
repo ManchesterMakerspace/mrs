@@ -55,6 +55,7 @@ var mongo = {
                     {lastname: nameObj.last}
                 ]}).collation({locale: 'en', strength:2});
                 memberSearchCursor.next(function onExistingMember(err, doc){ // just take the first result, don't really care if its unique
+                    if(err){console.log(err);}
                     client.db(mongo.dbName).collection('notes').insertOne({
                         _id: new mongo.ObjectID(),
                         timestamp: new Date().getTime(),
@@ -78,11 +79,12 @@ var mongo = {
     },
     stream: function(channel, cursor, client, collatedResult, onHandled){
         cursor.next(function onNote(error, doc){       // syncronously/recursively move through cursor results because we have nothing else todo
+            if(error){console.log(error);}
             if(doc){                                   // Show all notes in MR channel, share channel specific in channel of origin
                 if(channel === process.env.PRIVATE_VIEW_CHANNEL || channel === doc.channelId){
                     collatedResult += doc.note + '\n'; // collate relault to be returned
                 }
-                mongo.stream(cursor, client, collatedResult, onHandled);
+                mongo.stream(channel, cursor, client, collatedResult, onHandled);
             } else {
                 onHandled(error, collatedResult);
                 client.close();

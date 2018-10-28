@@ -13,18 +13,17 @@ module.exports.remember = function(event, context, callback) {
                 statusCode: 200,
                 headers: {'Content-type': 'application/json'},   // content type for richer responses beyound just text
             };
+            var resBody = {'response_type' : 'in_channel'};
             if(error){
-                response.body = JSON.stringify({'text' : error.name + ': ' + error.code});
-            } else {
-                if(data){                             // Need to be in a specific channel in order to recieve results
-                    response.body = JSON.stringify({'text' : 'recorded information for ' + body.text + '\n' + data});
-                } else {
-                    response.body = JSON.stringify({'text' : body.user_name + ' just recorded a note- ' + body.text});
-                }
+                resBody.text = error.name + ': ' + error.code;
+            } else { // Need to be in a specific channel in order to recieve results
+                if(data){ resBody.text = 'recorded information for ' + body.text + '\n' + data;}
+                else    { resBody.text = 'Thanks ' + body.user_name + ' that note is now saved to our database'; }
             }
+            response.body = JSON.stringify(resBody);
             callback(null, response);
         });
-    }
+    } else {callback(null, response);}
 };
 
 var mongo = {
